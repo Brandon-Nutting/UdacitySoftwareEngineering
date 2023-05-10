@@ -1,0 +1,10 @@
+def decorator(input_function):
+    print('Decorator function')
+    return input_function
+
+@decorator
+def input_function():
+    print("I am the input function")
+
+# See that the decorator() class is called before calling the input_function.
+input_function()

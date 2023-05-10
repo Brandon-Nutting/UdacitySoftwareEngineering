@@ -1,0 +1,102 @@
+Using Pipeline:
+    Pipeline is a way to chain together several transformers and an estimator. Allows you to just call .fit() and .predict() instead
+    of having to chain the different steps together. 
+
+    Estimator: Any object that learns from data. Can be a clasdification, regression, clustering algorithm, or a transformer
+    that extracts or filters useful features from raw data. 
+
+    Transformer: Specific type of estimator that has a fit method to learn from training data. Also has a transform method to apply a transformation model to new data. 
+        Ex. CountVectorize and TfidfTransformer
+
+    Predictor: Specific type of estimator that has a predict method to predict on test data based on a supervised learning algorithm. 
+        Ex. RandomForestClassifier
+    
+Feature Union: Allows you to perform steps in parallel and take the union of their results for the next step. 
+    Pipeline: Linear
+    Feature Union: Parallel
+Example of a pipeline: 
+pipeline = Pipeline([
+    ('features', FeatureUnion([
+
+        ('nlp_pipeline', Pipeline([
+            ('vect', CountVectorizer()
+            ('tfidf', TfidfTransformer())
+        ])),
+
+        ('txt_len', TextLengthExtractor())
+    ])),
+
+    ('clf', RandomForestClassifier())
+])
+                    
+Creating custom transformers:
+    Have to extend the existing skikitlearn classes. 
+    
+    Basic example of multiplying your data by 10:
+import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class TenMultiplier(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X * 10
+        
+Example of a case normalizer custom transform function
+
+import numpy as np
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class CaseNormalizer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return pd.Series(X).apply(lambda x: x.lower()).values
+
+case_normalizer = CaseNormalizer()
+
+X = np.array(['Implementing', 'a', 'Custom', 'Transformer', 'from', 'SCIKIT-LEARN'])
+case_normalizer.transform(X)
+
+Pipeline and gridsearch
+* Define a grid of parameters. Try out all possible combinations, score each combination, return the best.
+* Example pipeline using grid search
+
+def build_model():
+    pipeline = Pipeline([
+        ('features', FeatureUnion([
+
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+
+            ('starting_verb', StartingVerbExtractor())
+        ])),
+
+        ('clf', RandomForestClassifier())
+    ])
+
+    parameters = {
+        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+        'clf__n_estimators': [50, 100, 200],
+        'clf__min_samples_split': [2, 3, 4]
+    }
+
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+
+Main function: 
+ X, y = load_data()
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+    model = build_model()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    display_results(model, y_test, y_pred)

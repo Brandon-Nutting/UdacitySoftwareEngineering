@@ -1,0 +1,57 @@
+Udacity Flask Back End Notes
+
+Flask: A web framework that takes the job of setting up routing to ensure everything is where
+it needs to be. 
+
+* When you type http://www.udacity.com into a browser, your computer sends out a request to another computer (ie the server) where the Udacity website is stored. Then the Udacity server sends you the files needed to render the website in your browser. The Udacity computer is called a server because it "serves" you the files that you requested.* 
+
+HTTPS : Hypter Text Transfer Protocol : Describes how the information will be sent between computers.
+
+Software needs to exist on the 'server' computer, as these HTTPS commands neec to be interpreted somehow. A web framework will take care of abstracting the code for recieving requests, as well as interpreting the requests and sending out the correct files.
+
+Flask Notes Contd:
+* Understanding app.route(): What is passed into () will be the address of the page you are adding. The function written below the .route() call is resonsible for rendering the HTML template file. A full function call would look like: 
+    @app.route('/new-route)
+    def render_the_route():
+        return render_template('new_route.html')
+
+Side Note : @ in Python.
+    The @ character is used for decorators. Decorators are a shorthand way to input a function into another function. 
+
+Using Flask and Pandas
+*Note* The melt method: Used to convert the dataframe into having 1 Identifier column and the rest being a value column.
+
+Getting data to from the back end to the front end: This can be done by passing it in the render_template method. 
+
+@app.route('/route)
+def example():
+    return render_template('exmaple.html', data_set = data)
+Now the fron end can have access to data.
+
+Template Engine: Can utilize the Jinja template method to have access to the data. You have the enclose the variable in two curly braces : {{data}}
+*NOTE* Can also write control flow statements.
+
+Example: 
+{% for tuple in data %}
+   <p>{{tuple}}</p>
+{% endfor %}
+
+Basic approach to adding plotly plots:
+    Python is used to set up a Plotly visualization
+    1) An id is created associated with each visualization
+    2) The Python Plotly code is converted to JSON
+    3) The ids and JSON are sent to the front end (index.html).
+    4) The front end then uses the ids, JSON, and JavaScript Plotly library to render the plots.
+
+Deployment of the web app
+1) Create new folder named web_app, move all application folders/files to new folder.
+2) Create virtual enviornment and then activate it.
+3) Make sure all required packages are installed
+4) Install heroku
+5) Create a proc file. Tells heroku what to do when starting the app. 
+6) web gunicorn 'app name'
+7) Create requirements.txt file, lists all packages that your app depends on. 
+8) Initalize git repo, make a commit. 
+    a) If you make any changes you will need to run git add and git commit.
+9) Create heroku app.
+10) Push local repo to heroku repo.

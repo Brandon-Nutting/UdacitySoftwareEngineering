@@ -1,0 +1,156 @@
+NLP Pipeline Notes - End to End
+
+How it works: 
+A three step process : [Text Processing, Feature Extraction, Modeling]
+    1) Read in raw text data, clean it, normalize it, convert it to a form that is suitable for feature extraction. 
+    2) Extract features for the model you are building. The types of features that you pull out will be determined by the model chosen.
+    3) Design and run your model. 
+
+BeautifulSoup Workflow: 
+
+r = requests.get("https://www.rottentomatoes.com/m/et_the_extraterrestrial")
+print(r.text)
+
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(r.text,'lxml')
+soup.get_text()
+
+# Find all cast crew summaries
+crew = soup.find_all('div', {'data-qa':'cast-crew-item'})
+print('Number of actor in the cast crew:', len(crew))
+
+# print the first summary in crew
+print(crew[0].prettify())
+
+# Extract name
+crew[0].find_all('span')[0].get_text().strip()
+
+# Extract role
+crew[0].find_all('span')[1].get_text().strip()
+
+name_role = []
+for summary in crew:
+    # append name and role of each summary to name_role list
+    name = summary.find_all('span')[0].get_text().strip()
+    role = summary.find_all('span')[1].get_text().strip()
+    name_role.append((name, role))
+    
+    # display results
+print(len(name_role), " actors found in cast crew. Sample:")
+name_role[:5]
+
+It makes more sense to replace punction with a space as opposeed to just removing the punction character. This apprach helps keep the
+context of the string.
+
+Keep only [a-z, A-z, 0-9]
+import re
+text = re.sub(r"[^a-zA-Z0-9]", " ", text) 
+print(text)
+
+Tokenezation -> Splitting a sentence into a sequence of words.
+* Token : Represents information
+
+from nltk.tokenize import sent_tokenize
+# Split text into sentences
+sentences = sent_tokenize(text)
+print(sentences) 
+
+from nltk.tokenize import word_tokenize
+#Split text into words using NLTK
+words = word_tokenize(text)
+print(words)
+
+# Split text into tokens (words)
+words = text.split()
+print(words)
+
+Stop word removal
+* Stop words: words that do not have a lot of meaning to sentences or phrases, often very common words.
+
+# List stop words from NLTK
+from nltk.corpus import stopwords
+print(stopwords.words("english"))
+
+words = ['the', 'first', 'time', 'you', 'see', 'the', 'second', 'renaissance', 'it',
+ 'may', 'look', 'boring', 'look', 'at', 'it', 'at', 'least', 'twice', 'and', 'definetly', 'watch',
+  'part', '2', 'it', 'will', 'change', 'your', 'view', 'of', 'the', 'matrix', 'are', 'the',
+   'human people', 'the', 'ones', 'who', 'started', 'the', 'war', 'is', 'ai', 'a', 'bad', 'thing']
+# Remove stop words
+words = [w for w in words if w not in stopwords.words("english")]
+print(words)
+
+Part of speech tagging -> Tagging [Verb, noun, etc]
+
+from nltk import pos_tag
+# Tag parts of speach (PoS)
+sentence = word_tokenize("I always lie down to tell a lie.")
+pos_tag(sentence)
+
+# Define a cusom grammar
+my_grammar = nltk.CFG.fromstring("""
+S -> NP VP
+PP -> P NP
+NP -> Det N | Det N PP | 'I'
+VP -> V NP | VP PP
+Det -> 'an' | 'my'
+N -> 'elephant' | 'pajamas'
+V -> 'shot'
+P -> 'in'
+""")
+parser = nltk.ChartParser(my_grammar)
+
+# Parse a sentence
+sentence = word_tokenize("I shot an elephant in my pajamas")
+for tree in parser.parse(sentence):
+  print(tree)
+
+# Visualize parse trees
+for tree in parser.parse(sentence):
+  tree.draw()
+
+Named entity recogniztion -> Nouns or noun phrases that refer to specific object, person, or place.
+
+from nltk import pos_tag, ne_chunk
+from nltk.tokenize import word_tokenize
+# Recognize named entities in a tagged sentence
+ne_chunk(pos_tag(word_tokenize("Antonio joined Udacity Inc. in California.")))
+
+Stemming and lemmatization
+    Stemming: Reducting a word to its stem or root form. 
+        Ex. Branching, branched, branches all stem from the word branch.
+
+    from nltk.stem.porter import PorterStemmer
+    #Reduce words to their stems
+    stemmed = [PorterStemmer().stem(w) for w in words]
+    print(stemmed)
+
+    Lemmatization: Mapping a word back to it's root.
+        Ex. Is, was, and were would be lemmatized to 'be'
+    
+    from nltk.stem.wordnet import WordNetLemmatizer
+    # Reduce words to their root form
+    lemmed = [WordNetLemmatizer().lemmatize(w) for w in words]
+    print(lemmed)
+
+    # Lemmatize verbs by specifying pos
+    lemmed = [WordNetLemmatizer().lemmatize(w, pos='v') for w in lemmed]
+    print(lemmed)
+
+Stage 2: Feature Extraction
+Representing words as their ASCII representation. The approach to this step depends on the model you wish to build.
+
+Bag of words: 
+    Treats each unit of text as its own 'document' (document -> What you want to analyze.).
+
+    Treat tokens as unordered set. Each set of document is refered to as a corpus. 
+
+    Can compute the dot product between two documents. Greater the dot product -> more related the documents are. Only captures the overlap. 
+        A better measure is cosine linearity. -> Divide the dot product by the magnitude of each. 
+
+TF-IDF: 
+    Bag or words treats every word with equal importance -> intuitavely we understand this to not be correct.
+        Account for this by tracking the document frequency, and then dividing the count by the frequency. 
+TF-IDF => tfidf(t,d,D) = tf(t,d) * idf(t,D)
+
+Optional Sections:
+    Word2Vec: 
